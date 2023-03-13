@@ -30,6 +30,8 @@ const getDefaultRoute = (): Route => ({
   data: notFoundPageData
 })
 
+let prevHref = "/";
+
 interface PageModule {
   __pageData: PageData
   default: Component
@@ -48,6 +50,9 @@ export function createRouter(
 
   async function go(href: string = inBrowser ? location.href : '/') {
     await router.onBeforeRouteChange?.(href)
+
+    prevHref = href;
+
     const url = new URL(href, fakeHost)
     if (!siteDataRef.value.cleanUrls) {
       // ensure correct deep link so page refresh lands on correct files.
@@ -69,6 +74,8 @@ export function createRouter(
   let latestPendingPath: string | null = null
 
   async function loadPage(href: string, scrollPosition = 0, isRetry = false) {
+    prevHref = href;
+
     const targetLoc = new URL(href, fakeHost)
     const pendingPath = (latestPendingPath = targetLoc.pathname)
     try {
@@ -193,6 +200,8 @@ export function createRouter(
                 window.dispatchEvent(new Event('hashchange'))
                 // use smooth scroll when clicking on header anchor links
                 scrollTo(link, hash, link.classList.contains('header-anchor'))
+              } else {
+                go(href);
               }
             } else {
               go(href)
@@ -204,7 +213,11 @@ export function createRouter(
     )
 
     window.addEventListener('popstate', (e) => {
-      loadPage(location.href, (e.state && e.state.scrollPosition) || 0)
+      let [uri, _hash] = location.href.split("#");
+
+      if (uri !== prevHref) {
+        loadPage(location.href, (e.state && e.state.scrollPosition) || 0)
+      }
     })
 
     window.addEventListener('hashchange', (e) => {
