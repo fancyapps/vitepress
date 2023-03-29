@@ -10,13 +10,13 @@ import {
 import { useMediaQuery } from '@vueuse/core'
 import { useRoute } from 'vitepress'
 import type { DefaultTheme } from 'vitepress/theme'
-import { isActive } from '../support/utils.js'
+import { isActive } from '../support/utils'
 import {
   hasActiveLink as containsActiveLink,
   getSidebar,
   getSidebarGroups
-} from '../support/sidebar.js'
-import { useData } from './data.js'
+} from '../support/sidebar'
+import { useData } from './data'
 
 export interface SidebarControl {
   collapsed: Ref<boolean>
@@ -47,6 +47,14 @@ export function useSidebar() {
       sidebar.value.length > 0 &&
       frontmatter.value.layout !== 'home'
     )
+  })
+
+  const leftAside = computed(() => {
+    if (hasAside)
+      return frontmatter.value.aside == null
+        ? theme.value.aside === 'left'
+        : frontmatter.value.aside === 'left'
+    return false
   })
 
   const hasAside = computed(() => {
@@ -80,6 +88,7 @@ export function useSidebar() {
     sidebarGroups,
     hasSidebar,
     hasAside,
+    leftAside,
     isSidebarEnabled,
     open,
     close,

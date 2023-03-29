@@ -97,7 +97,7 @@ export async function highlight(
 
     if (lang) {
       const langLoaded = highlighter.getLoadedLanguages().includes(lang as any)
-      if (!langLoaded && lang !== 'ansi') {
+      if (!langLoaded && lang !== 'ansi' && lang !== 'txt') {
         logger.warn(
           c.yellow(
             `\nThe language '${lang}' is not loaded, falling back to '${
@@ -110,10 +110,15 @@ export async function highlight(
     }
 
     const lineOptions = attrsToLines(attrs)
-    const cleanup = (str: string) =>
-      str
-        .replace(preRE, (_, attributes) => `<pre ${vPre}${attributes}>`)
+    const cleanup = (str: string) => {
+      return str
+        .replace(
+          preRE,
+          (_, attributes) =>
+            `<pre ${vPre}${attributes.replace(' tabindex="0"', '')}>`
+        )
         .replace(styleRE, (_, style) => _.replace(style, ''))
+    }
 
     const mustaches = new Map<string, string>()
 
