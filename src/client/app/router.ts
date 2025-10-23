@@ -74,6 +74,8 @@ export function createRouter(
   loadPageModule: (path: string) => Awaitable<PageModule | null>,
   fallbackComponent?: Component
 ): Router {
+  let lastPathname: String | null = null
+
   const route = reactive(getDefaultRoute())
 
   const router: Router = {
@@ -93,6 +95,16 @@ export function createRouter(
     if ((await router.onBeforePageLoad?.(href)) === false) return
 
     const targetLoc = new URL(href, fakeHost)
+
+    if (targetLoc.pathname === lastPathname) {
+      if (targetLoc.hash) {
+        scrollTo(targetLoc.hash, false, scrollPosition)
+      }
+      return
+    }
+
+    lastPathname = targetLoc.pathname
+
     const pendingPath = (latestPendingPath = targetLoc.pathname)
 
     try {
